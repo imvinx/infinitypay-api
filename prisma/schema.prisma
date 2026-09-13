@@ -1,0 +1,163 @@
+// ==============================================================================
+// InfinityPay API - Prisma Schema
+// PostgreSQL compatible, supports connection pooling & serverless environments.
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  status    String   @default("active") // "active" | "suspended"
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships enforcing merchant ownership & data isolation
+  apiKeys      ApiKey[]
+  accounts     PaymentAccount[]
+  orders       PaymentOrder[]
+  transactions Transaction[]
+
+  @@map("merchants")
+}
+
+model ApiKey {
+  id         String    @id @default(uuid())
+  merchantId String    @map("merchant_id")
+  name       String    @default("Production Key")
+  keyHash    String    @unique @map("key_hash") // SHA-256 hash of plaintext API key
+  keyPrefix  String    @map("key_prefix") // E.g. "ip_live_a1b2..." for display/lookup
+  status     String    @default("active") // "active" | "revoked"
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model PaymentAccount {
+  id                 String    @id @default(uuid())
+  merchantId         String    @map("merchant_id")
+  phoneNumber        String    @map("phone_number")
+  upiId              String    @map("upi_id")
+  email              String
+  verificationStatus String    @default("pending") @map("verification_status") // "pending" | "verified" | "failed"
+  status             String    @default("inactive") // "inactive" | "active" (only 1 active allowed per merchant)
+  verifiedAt         DateTime? @map("verified_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  merchant        Merchant         @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  orders          PaymentOrder[]
+  transactions    Transaction[]
+  gmailConnection GmailConnection?
+  syncLogs        SyncLog[]
+
+  @@index([merchantId])
+  @@index([status])
+  @@index([verificationStatus])
+  @@map("payment_accounts")
+}
+
+model PaymentOrder {
+  id                   String   @id @default(uuid())
+  orderId              String   @unique @map("order_id") // E.g. "IP20260913A1B2C3"
+  merchantId           String   @map("merchant_id")
+  accountId            String   @map("account_id")
+  amount               Float // Normalized currency amount as number
+  currency             String   @default("INR")
+  title                String?
+  customerMobile       String?  @map("customer_mobile")
+  redirectUrl          String?  @map("redirect_url")
+  status               String   @default("pending") // "pending" | "success" | "failed" | "expired"
+  matchedTransactionId String?  @unique @map("matched_transaction_id")
+  expiresAt            DateTime @map("expires_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  merchant           Merchant       @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  account            PaymentAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  matchedTransaction Transaction?   @relation("OrderTransactionMatch", fields: [matchedTransactionId], references: [id])
+
+  @@index([merchantId])
+  @@index([accountId])
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("payment_orders")
+}
+
+model Transaction {
+  id              String   @id @default(uuid())
+  accountId       String   @map("account_id")
+  merchantId      String   @map("merchant_id")
+  sender          String?
+  amount          Float // Normalized decimal/number
+  currency        String   @default("INR")
+  reference       String?
+  utr             String?
+  purpose         String?
+  sourceMessageId String?  @map("source_message_id") // Prevents duplicate ingestion
+  rawEmailSnippet String?  @map("raw_email_snippet") // Redacted summary for debugging
+  transactionDate DateTime @map("transaction_date")
+  receivedAt      DateTime @default(now()) @map("received_at")
+  matchedOrderId  String?  @map("matched_order_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  account      PaymentAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  merchant     Merchant       @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  matchedOrder PaymentOrder?  @relation("OrderTransactionMatch")
+
+  @@index([accountId])
+  @@index([merchantId])
+  @@index([reference])
+  @@index([utr])
+  @@index([transactionDate])
+  @@index([sourceMessageId])
+  @@map("transactions")
+}
+
+model GmailConnection {
+  id                   String    @id @default(uuid())
+  accountId            String    @unique @map("account_id")
+  email                String
+  authType             String    @default("oauth2") @map("auth_type") // "oauth2" | "app_password"
+  encryptedCredentials String    @map("encrypted_credentials") // AES-256-GCM encrypted
+  tokenExpiry          DateTime? @map("token_expiry")
+  lastSyncedAt         DateTime? @map("last_synced_at")
+  syncStatus           String    @default("idle") @map("sync_status") // "idle" | "syncing" | "error" | "connected"
+  lastError            String?   @map("last_error")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  account PaymentAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("gmail_connections")
+}
+
+model SyncLog {
+  id           String   @id @default(uuid())
+  accountId    String   @map("account_id")
+  status       String // "success" | "failed"
+  syncedCount  Int      @default(0) @map("synced_count")
+  matchedCount Int      @default(0) @map("matched_count")
+  errorMessage String?  @map("error_message")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  account PaymentAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@map("sync_logs")
+}

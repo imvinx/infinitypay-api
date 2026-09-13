@@ -1,0 +1,45 @@
+{
+  "name": "infinitypay-api",
+  "version": "1.0.0",
+  "description": "Production-ready payment gateway REST API platform adapted for Vercel serverless deployment",
+  "main": "api/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "test:watch": "jest --watch",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:dev": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "node prisma/seed.js"
+  },
+  "keywords": [
+    "payment-gateway",
+    "infinitypay",
+    "rest-api",
+    "vercel",
+    "express",
+    "prisma",
+    "upi",
+    "serverless"
+  ],
+  "author": "InfinityPay Platform Team",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "prisma": "^5.22.0",
+    "supertest": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
