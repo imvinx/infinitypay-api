@@ -39,3 +39,6 @@ coverage/
 prisma/*.db
 prisma/*.db-journal
 test.db
+
+.vercel
+.env*
