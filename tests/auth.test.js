@@ -21,7 +21,7 @@ describe('API Key Authentication & Management', () => {
     expect(res.body.data).toHaveProperty('key_id');
     expect(res.body.data).toHaveProperty('api_key');
     expect(res.body.data).toHaveProperty('created_at');
-    expect(res.body.data.api_key.startsWith('ip_live_')).toBe(true);
+    expect(res.body.data.api_key.startsWith('vinx_ip_live_')).toBe(true);
   });
 
   it('GET /api/developer/keys returns key metadata only, never revealing raw keys', async () => {
@@ -55,7 +55,7 @@ describe('API Key Authentication & Management', () => {
   it('Rejects requests with invalid API key with INVALID_API_KEY (HTTP 401)', async () => {
     const res = await request(app)
       .get('/api/developer/keys')
-      .set('X-InfinityPay-Key', 'ip_live_invalid_random_token_12345');
+      .set('X-InfinityPay-Key', 'vinx_ip_live_invalid_random_token_12345');
 
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);

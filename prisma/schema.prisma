@@ -34,7 +34,7 @@ model ApiKey {
   merchantId String    @map("merchant_id")
   name       String    @default("Production Key")
   keyHash    String    @unique @map("key_hash") // SHA-256 hash of plaintext API key
-  keyPrefix  String    @map("key_prefix") // E.g. "ip_live_a1b2..." for display/lookup
+  keyPrefix  String    @map("key_prefix") // E.g. "vinx_ip_live_a1b2..." for display/lookup
   status     String    @default("active") // "active" | "revoked"
   lastUsedAt DateTime? @map("last_used_at")
   createdAt  DateTime  @default(now()) @map("created_at")

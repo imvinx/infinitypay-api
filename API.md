@@ -62,11 +62,11 @@ All endpoints are grouped under `/api/` and strictly return JSON payloads.
 Authenticated endpoints require an active InfinityPay API key. Pass via either:
 
 ```http
-X-InfinityPay-Key: ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+X-InfinityPay-Key: vinx_ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 Or:
 ```http
-Authorization: Bearer ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Authorization: Bearer vinx_ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 ---
@@ -122,7 +122,7 @@ Generates a new API key for the merchant.
   "message": "API key created successfully. Store it safely; it will not be shown again.",
   "data": {
     "key_id": "key_e4a8b1c2",
-    "api_key": "ip_live_9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+    "api_key": "vinx_ip_live_9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
     "created_at": "2026-09-13T11:22:48.000Z"
   }
 }
@@ -146,7 +146,7 @@ Lists metadata for all API keys belonging to the merchant.
       {
         "id": "key_e4a8b1c2",
         "name": "Production Key",
-        "key_prefix": "ip_live_9f8e7d6c",
+        "key_prefix": "vinx_ip_live_9f8e7d6c",
         "status": "active",
         "last_used_at": "2026-09-13T11:25:10.000Z",
         "created_at": "2026-09-13T11:22:48.000Z",

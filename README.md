@@ -13,7 +13,7 @@
   - **Connected Payment Account**: Dedicated UPI/bank account connection. Maximum of 3 accounts per merchant, with strict verification and single-active checkout exclusivity.
   - **Payment Order**: Server-verified payment orders with internal IDs (`IPYYYYMMDDXXXXXX`), dynamic payment links, and strict server-side verification.
 - **Server-Side Transaction Verification & Matching**: Safe, idempotent payment matching engine reconciles bank/UPI transaction emails to pending orders. **An order is NEVER marked successful by a client redirect, query parameter, or frontend callback.**
-- **Secure Hashed API-Key System**: High-entropy keys (`ip_live_...`) with SHA-256 database hashing, key rotation, and revocation.
+- **Secure Hashed API-Key System**: High-entropy keys (`vinx_ip_live_...`) with SHA-256 database hashing, key rotation, and revocation.
 - **Sliding-Window Rate Limiting**: Keyed by merchant API key and client IP with HTTP 429 and standard headers (`X-RateLimit-*`).
 - **Encrypted Credential Storage**: AES-256-GCM authenticated encryption for sensitive integration secrets at rest.
 
@@ -153,11 +153,11 @@ npm test
 All authenticated endpoints require an InfinityPay API key passed via either header:
 
 ```http
-X-InfinityPay-Key: ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+X-InfinityPay-Key: vinx_ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 Or:
 ```http
-Authorization: Bearer ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Authorization: Bearer vinx_ip_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 API keys are:
@@ -188,7 +188,7 @@ curl -X POST http://localhost:3000/api/developer/keys \
   "message": "API key created successfully. Store it safely; it will not be shown again.",
   "data": {
     "key_id": "key_a9f1bc2d",
-    "api_key": "ip_live_8f0a1c2b3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
+    "api_key": "vinx_ip_live_8f0a1c2b3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
     "created_at": "2026-09-13T11:22:48.000Z"
   }
 }
@@ -199,7 +199,7 @@ Merchants can connect up to 3 payment accounts:
 ```bash
 curl -X POST http://localhost:3000/api/accounts \
   -H "Content-Type: application/json" \
-  -H "X-InfinityPay-Key: ip_live_YOUR_KEY" \
+  -H "X-InfinityPay-Key: vinx_ip_live_YOUR_KEY" \
   -d '{
     "phone_number": "9876543210",
     "upi_id": "acme@okhdfcbank",
@@ -212,18 +212,18 @@ An account must be verified before activation, and only one account can be activ
 ```bash
 # 1. Verify Account
 curl -X POST http://localhost:3000/api/accounts/acc_12345678/verify \
-  -H "X-InfinityPay-Key: ip_live_YOUR_KEY"
+  -H "X-InfinityPay-Key: vinx_ip_live_YOUR_KEY"
 
 # 2. Activate for Checkout
 curl -X POST http://localhost:3000/api/accounts/acc_12345678/activate \
-  -H "X-InfinityPay-Key: ip_live_YOUR_KEY"
+  -H "X-InfinityPay-Key: vinx_ip_live_YOUR_KEY"
 ```
 
 ### 9.4 Create Payment Order
 ```bash
 curl -X POST http://localhost:3000/api/developer/create-order \
   -H "Content-Type: application/json" \
-  -H "X-InfinityPay-Key: ip_live_YOUR_KEY" \
+  -H "X-InfinityPay-Key: vinx_ip_live_YOUR_KEY" \
   -d '{
     "amount": 499,
     "title": "Order #123",
@@ -250,7 +250,7 @@ curl -X POST http://localhost:3000/api/developer/create-order \
 ### 9.5 Fetch Order Status
 ```bash
 curl -X GET http://localhost:3000/api/developer/order-status/IP202609138F92B1C4 \
-  -H "X-InfinityPay-Key: ip_live_YOUR_KEY"
+  -H "X-InfinityPay-Key: vinx_ip_live_YOUR_KEY"
 ```
 
 **Response:**
